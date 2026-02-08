@@ -1,0 +1,165 @@
+---- Specialties Table (Lookup) ----
+
+
+CREATE TABLE specialties (
+    specialty_id INT AUTO_INCREMENT PRIMARY KEY,
+    specialty_name VARCHAR(100) UNIQUE NOT NULL
+);
+
+INSERT INTO specialties (specialty_name) VALUES
+('Cardiology'),
+('Orthopedics'),
+('Dermatology'),
+('Neurology'),
+('Pediatrics');
+
+
+
+---- Modify Doctors Table (As per UC-2 Requirements) ----
+DROP TABLE IF EXISTS doctors;
+
+CREATE TABLE doctors (
+    doctor_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    contact VARCHAR(15),
+    consultation_fee DECIMAL(10,2),
+    specialty_id INT,
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (specialty_id) REFERENCES specialties(specialty_id)
+);
+
+
+
+
+---- 2️ UC-2.1: Add Doctor Profile (INSERT) ----
+
+---- Display available specialties ----
+
+SELECT * FROM specialties;
+
+
+---- Insert new doctor ----
+
+INSERT INTO doctors (name, contact, consultation_fee, specialty_id)
+VALUES ('Dr. Mehta', '9876501234', 1000.00, 1);
+
+
+---- Verify ----
+
+SELECT * FROM doctors;
+
++-----------+----------+-------------+------------------+--------------+-----------+
+| doctor_id | name     | contact     | consultation_fee| specialty_id | is_active |
++-----------+----------+-------------+------------------+--------------+-----------+
+| 1         | Dr. Mehta| 9876501234  | 1000.00         | 1            | 1         |
++-----------+----------+-------------+------------------+--------------+-----------+
+
+
+
+
+
+
+
+---- 3️ UC-2.2: Assign / Update Doctor Specialty ----
+
+---- Before Update ----
+
+SELECT * FROM doctors WHERE doctor_id = 1;
+
+
+
++-----------+----------+-------------+------------------+--------------+-----------+
+| doctor_id | name     | contact     | consultation_fee| specialty_id | is_active |
++-----------+----------+-------------+------------------+--------------+-----------+
+| 1         | Dr. Mehta| 9876501234  | 1000.00         | 3            | 1         |
++-----------+----------+-------------+------------------+--------------+-----------+
+
+
+
+
+---- Update Specialty ----
+
+UPDATE doctors
+SET specialty_id = 3
+WHERE doctor_id = 1;
+
+
+---- After Update ----
+
+SELECT * FROM doctors WHERE doctor_id = 1;
+
+
+
++-----------+-----------+----------------+------------+------------------+--------------+-----------+
+| doctor_id | name      | specialization | contact    | consultation_fee | specialty_id | is_active |
++-----------+-----------+----------------+------------+------------------+--------------+-----------+
+|         1 | Dr. Mehta | NULL           | 9876501234 |          1000.00 |            1 |         1 |
++-----------+-----------+----------------+------------+------------------+--------------+-----------+
+
+
+
+
+
+---- 4️ UC-2.3: View Doctors by Specialty (JOIN) ----
+
+---- View Doctors of Dermatology ----
+
+SELECT 
+    d.doctor_id,
+    d.name AS doctor_name,
+    s.specialty_name,
+    d.contact,
+    d.consultation_fee,
+    d.is_active
+FROM doctors d
+JOIN specialties s ON d.specialty_id = s.specialty_id
+WHERE s.specialty_name = 'Dermatology'
+  AND d.is_active = TRUE;
+  
+  
+  
++-----------+-------------+---------------+-------------+------------------+-----------+
+| doctor_id | doctor_name| specialty_name| contact     | consultation_fee| is_active |
++-----------+-------------+---------------+-------------+------------------+-----------+
+| 1         | Dr. Mehta  | Dermatology   | 9876501234  | 1000.00         | 1         |
++-----------+-------------+---------------+-------------+------------------+-----------+
+
+
+
+
+
+---- 5️ UC-2.4: Deactivate Doctor Profile (Soft Delete) ----
+
+---- Check Future Appointments ----
+
+SELECT COUNT(*) AS future_appointments
+FROM appointments
+WHERE doctor_id = 1
+  AND appointment_date > NOW()
+  AND status = 'Scheduled';
+
+
+---- Deactivate Doctor (Soft Delete) ----
+
+UPDATE doctors
+SET is_active = FALSE
+WHERE doctor_id = 1;
+
+
+---- Verify Deactivation ----
+
+SELECT * FROM doctors WHERE doctor_id = 1;
+
+
++-----------+----------+-------------+------------------+--------------+-----------+
+| doctor_id | name     | contact     | consultation_fee| specialty_id | is_active |
++-----------+----------+-------------+------------------+--------------+-----------+
+| 1         | Dr. Mehta| 9876501234  | 1000.00         | 3            | 0         |
++-----------+----------+-------------+------------------+--------------+-----------+
+
+
+
+
+
+
+
