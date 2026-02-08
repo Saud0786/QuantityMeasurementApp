@@ -1,0 +1,145 @@
+---- Bills & Payment Tables (Schema Creation) ----
+CREATE TABLE bills (
+    bill_id INT AUTO_INCREMENT PRIMARY KEY,
+    visit_id INT NOT NULL,
+    consultation_fee DECIMAL(10,2) NOT NULL,
+    additional_charges DECIMAL(10,2) DEFAULT 0.00,
+    total_amount DECIMAL(10,2) NOT NULL,
+    payment_status VARCHAR(20) DEFAULT 'UNPAID',
+    bill_date DATE DEFAULT (CURRENT_DATE),
+    FOREIGN KEY (visit_id) REFERENCES visits(visit_id)
+);
+
+CREATE TABLE payment_transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    bill_id INT NOT NULL,
+    payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    payment_mode VARCHAR(50),   -- Cash, Card, UPI, etc.
+    amount_paid DECIMAL(10,2),
+    FOREIGN KEY (bill_id) REFERENCES bills(bill_id)
+);
+
+---- 1️ UC-5.1: Generate Bill for Visit ----
+
+कुल बिल = Doctor’s consultation fee + additional charges
+(Doctor fee fetched via JOIN)
+
+INSERT INTO bills (visit_id, consultation_fee, additional_charges, total_amount)
+SELECT 
+    v.visit_id,
+    d.consultation_fee,
+    200.00 AS additional_charges,                 -- example lab charges
+    d.consultation_fee + 200.00 AS total_amount
+FROM visits v
+JOIN appointments a ON v.appointment_id = a.appointment_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE v.visit_id = 2;
+
+
+---- Verify ----
+
+SELECT * FROM bills;
+
+
+Sample Output:
+
++--------+----------+------------------+--------------------+-------------+---------------+------------+
+| bill_id| visit_id | consultation_fee | additional_charges| total_amount| payment_status| bill_date  |
++--------+----------+------------------+--------------------+-------------+---------------+------------+
+| 1      | 2        | 1000.00          | 200.00             | 1200.00     | UNPAID        | 2026-02-09 |
++--------+----------+------------------+--------------------+-------------+---------------+------------+
+
+---- 2️ UC-5.2: Record Payment (Transaction + Log) ----
+START TRANSACTION;
+
+UPDATE bills
+SET payment_status = 'PAID'
+WHERE bill_id = 1;
+
+INSERT INTO payment_transactions (bill_id, payment_mode, amount_paid)
+VALUES (1, 'UPI', 1200.00);
+
+COMMIT;
+
+
+---- Verify ----
+
+SELECT * FROM bills WHERE bill_id = 1;
+SELECT * FROM payment_transactions WHERE bill_id = 1;
+
+
+Sample Output (bills):
+
++--------+----------+------------------+--------------------+-------------+---------------+------------+
+| bill_id| visit_id | consultation_fee | additional_charges| total_amount| payment_status| bill_date  |
++--------+----------+------------------+--------------------+-------------+---------------+------------+
+| 1      | 2        | 1000.00          | 200.00             | 1200.00     | PAID          | 2026-02-09 |
++--------+----------+------------------+--------------------+-------------+---------------+------------+
+
+---- 3️ UC-5.3: View Outstanding Bills (Grouped by Patient) ----
+SELECT 
+    p.patient_id,
+    p.name AS patient_name,
+    COUNT(b.bill_id) AS total_unpaid_bills,
+    SUM(b.total_amount) AS total_due_amount
+FROM bills b
+JOIN visits v ON b.visit_id = v.visit_id
+JOIN appointments a ON v.appointment_id = a.appointment_id
+JOIN patients p ON a.patient_id = p.patient_id
+WHERE b.payment_status = 'UNPAID'
+GROUP BY p.patient_id, p.name;
+
+
+Sample Output:
+
++------------+--------------+--------------------+-------------------+
+| patient_id | patient_name | total_unpaid_bills | total_due_amount |
++------------+--------------+--------------------+-------------------+
+| 1          | Rahul Sharma | 1                  | 800.00            |
++------------+--------------+--------------------+-------------------+
+
+
+
+
+---- 4️ UC-5.4: Generate Revenue Report ----
+
+----- Revenue by Date (Range Filter)  ----
+
+SELECT 
+    bill_date,
+    SUM(total_amount) AS total_revenue
+FROM bills
+WHERE payment_status = 'PAID'
+  AND bill_date BETWEEN '2026-02-01' AND '2026-02-28'
+GROUP BY bill_date
+HAVING SUM(total_amount) > 500;
+
+
+
+---- Revenue by Doctor ----
+
+SELECT 
+    d.name AS doctor_name,
+    SUM(b.total_amount) AS doctor_revenue
+FROM bills b
+JOIN visits v ON b.visit_id = v.visit_id
+JOIN appointments a ON v.appointment_id = a.appointment_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE b.payment_status = 'PAID'
+GROUP BY d.name
+HAVING SUM(b.total_amount) > 500;
+
+
+---- Revenue by Specialty ----
+
+SELECT 
+    s.specialty_name,
+    SUM(b.total_amount) AS specialty_revenue
+FROM bills b
+JOIN visits v ON b.visit_id = v.visit_id
+JOIN appointments a ON v.appointment_id = a.appointment_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+JOIN specialties s ON d.specialty_id = s.specialty_id
+WHERE b.payment_status = 'PAID'
+GROUP BY s.specialty_name
+HAVING SUM(b.total_amount) > 500;
