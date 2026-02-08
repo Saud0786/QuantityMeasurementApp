@@ -1,0 +1,148 @@
+---- Appointment Audit Table (For UC-3.3 Logging) ----
+CREATE TABLE appointment_audit (
+    audit_id INT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INT,
+    action VARCHAR(50),
+    action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    remarks VARCHAR(255)
+);
+
+
+
+---- 1️ UC-3.1: Book New Appointment ----
+
+---- Check Doctor Availability (same date & time slot) ----
+
+SELECT COUNT(*) AS slot_count
+FROM appointments
+WHERE doctor_id = 1
+  AND appointment_date = '2026-02-09 10:30:00'
+  AND status = 'Scheduled';
+  
+ 
+  ---- Insert New Appointment (if slot_count = 0) ----
+
+INSERT INTO appointments (patient_id, doctor_id, appointment_date, status)
+VALUES (1, 2, '2026-02-09 10:30:00', 'Scheduled');
+
+
+---- Verify ----
+
+SELECT * FROM appointments;
+
+
++----------------+------------+-----------+---------------------+-----------+
+| appointment_id | patient_id | doctor_id | appointment_date    | status    |
++----------------+------------+-----------+---------------------+-----------+
+| 1              | 1          | 1         | 2026-02-08 10:30:00 | Scheduled |
+| 2              | 1          | 2         | 2026-02-09 10:30:00 | Scheduled |
++----------------+------------+-----------+---------------------+-----------+
+
+
+
+---- 2️ UC-3.2: Check Doctor Availability (Slot-wise) ----
+
+Assume max capacity = 3 appointments per slot
+
+SELECT 
+    DATE(appointment_date) AS appt_date,
+    HOUR(appointment_date) AS appt_hour,
+    COUNT(*) AS booked_slots,
+    (3 - COUNT(*)) AS available_slots
+FROM appointments
+WHERE doctor_id = 2
+  AND DATE(appointment_date) = '2026-02-09'
+  AND status = 'Scheduled'
+GROUP BY DATE(appointment_date), HOUR(appointment_date);
+
+
+Sample Output:
+
++------------+-----------+--------------+------------------+
+| appt_date  | appt_hour | booked_slots | available_slots |
++------------+-----------+--------------+------------------+
+| 2026-02-09 | 10        | 1            | 2                |
++------------+-----------+--------------+------------------+
+
+
+
+
+
+---- 3️ UC-3.3: Cancel Appointment (Transaction + Audit Log) ----
+START TRANSACTION;
+
+UPDATE appointments
+SET status = 'Cancelled'
+WHERE appointment_id = 2;
+
+INSERT INTO appointment_audit (appointment_id, action, remarks)
+VALUES (2, 'CANCELLED', 'Cancelled by patient');
+
+COMMIT;
+
+
+---- Verify ----
+
+SELECT * FROM appointments WHERE appointment_id = 2;
+SELECT * FROM appointment_audit;
+
+
+Sample Output:
+
++----------------+------------+-----------+---------------------+-----------+
+| appointment_id | patient_id | doctor_id | appointment_date    | status    |
++----------------+------------+-----------+---------------------+-----------+
+| 2              | 1          | 2         | 2026-02-09 10:30:00 | Cancelled |
++----------------+------------+-----------+---------------------+-----------+
+
+
+
+---- 4️ UC-3.4: Reschedule Appointment (With Rollback) ----
+START TRANSACTION;
+
+-- Check availability of new slot
+SELECT COUNT(*) AS slot_count
+FROM appointments
+WHERE doctor_id = 1
+  AND appointment_date = '2026-02-10 11:00:00'
+  AND status = 'Scheduled';
+
+-- If slot_count = 0, proceed
+UPDATE appointments
+SET doctor_id = 1,
+    appointment_date = '2026-02-10 11:00:00'
+WHERE appointment_id = 2;
+
+-- If conflict occurs:
+-- ROLLBACK;
+
+COMMIT;
+
+
+---- Verify ----
+
+SELECT * FROM appointments WHERE appointment_id = 2;
+
+
+
+---- 5️ UC-3.5: View Daily Appointment Schedule (JOIN) ----
+SELECT 
+    a.appointment_id,
+    p.name AS patient_name,
+    d.name AS doctor_name,
+    a.appointment_date,
+    a.status
+FROM appointments a
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE DATE(a.appointment_date) = '2026-02-09'
+ORDER BY a.appointment_date;
+
+
+Sample Output:
+
++----------------+--------------+-------------+---------------------+-----------+
+| appointment_id | patient_name | doctor_name | appointment_date    | status    |
++----------------+--------------+-------------+---------------------+-----------+
+| 2              | Rahul Sharma | Dr. Mehta   | 2026-02-09 10:30:00 | Cancelled |
++----------------+--------------+-------------+---------------------+-----------+
