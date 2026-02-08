@@ -1,0 +1,142 @@
+---- Audit Log Table (For UC-6.3) ----
+CREATE TABLE audit_log (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    action_type VARCHAR(20),          -- INSERT / UPDATE / DELETE
+    table_name VARCHAR(50),
+    record_id INT,
+    changed_by VARCHAR(50),
+    action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+---- Triggers to Populate Audit Log (INSERT / UPDATE / DELETE) ----
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_doctors_insert
+AFTER INSERT ON doctors
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_log (action_type, table_name, record_id, changed_by)
+    VALUES ('INSERT', 'doctors', NEW.doctor_id, USER());
+END$$
+
+CREATE TRIGGER trg_doctors_update
+AFTER UPDATE ON doctors
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_log (action_type, table_name, record_id, changed_by)
+    VALUES ('UPDATE', 'doctors', NEW.doctor_id, USER());
+END$$
+
+CREATE TRIGGER trg_doctors_delete
+AFTER DELETE ON doctors
+FOR EACH ROW
+BEGIN
+    INSERT INTO audit_log (action_type, table_name, record_id, changed_by)
+    VALUES ('DELETE', 'doctors', OLD.doctor_id, USER());
+END$$
+
+DELIMITER ;
+
+
+
+---- 1️ UC-6.1: Manage Specialty Lookup (CRUD + FK Check) ----
+
+INSERT INTO specialties (specialty_name)
+VALUES ('Oncology');
+
+
++--------------+----------------+
+| specialty_id | specialty_name |
++--------------+----------------+
+| 1            | Cardiology     |
+| 2            | Orthopedics    |
+| 3            | Dermatology    |
+| 4            | Neurology      |
+| 5            | Pediatrics     |
+| 6            | Oncology       |
++--------------+----------------+
+
+
+
+--- Update Specialty ---
+
+UPDATE specialties
+SET specialty_name = 'Neurosurgery'
+WHERE specialty_id = 4;
+
+SELECT * FROM specialties WHERE specialty_id = 4;
+
++--------------+----------------+
+| specialty_id | specialty_name |
++--------------+----------------+
+| 4            | Neurosurgery   |
++--------------+----------------+
+
+
+
+
+---- Delete Specialty (FK Check) ---
+
+SELECT COUNT(*) AS usage_count
+FROM doctors
+WHERE specialty_id = 1;
+
+
+
+Sample Output:
+
++-------------+
+| usage_count |
++-------------+
+| 1           |
++-------------+
+
+
+
+---- UC-6.2: Database Backup Validation (Schema + Data Check) ----
+SELECT table_name, table_rows
+FROM information_schema.tables
+WHERE table_schema = 'hospital_db';
+
+
+Sample Output:
+
++----------------------+------------+
+| table_name           | table_rows |
++----------------------+------------+
+| patients             | 1          |
+| doctors              | 2          |
+| appointments         | 2          |
+| visits               | 2          |
+| prescriptions        | 3          |
+| bills                | 1          |
+| payment_transactions | 1          |
+| specialties          | 6          |
+| audit_log            | 5          |
++----------------------+------------+
+
+
+
+
+---- UC-6.3: View System Audit Logs ----
+SELECT * FROM audit_log
+ORDER BY action_time DESC;
+
+
+Sample Output:
+
++--------+-------------+------------+-----------+------------+---------------------+
+| log_id | action_type | table_name | record_id| changed_by| action_time         |
++--------+-------------+------------+-----------+------------+---------------------+
+| 5      | UPDATE      | doctors    | 2         | root@localhost | 2026-02-10 11:02:15 |
+| 4      | INSERT      | bills      | 1         | root@localhost | 2026-02-09 18:30:22 |
+| 3      | UPDATE      | appointments| 2        | root@localhost | 2026-02-09 17:45:10 |
++--------+-------------+------------+-----------+------------+---------------------+
+
+
+
+
