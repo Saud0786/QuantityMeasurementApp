@@ -1,0 +1,88 @@
+---- Prescriptions Table (One-to-Many with Visits) ----
+CREATE TABLE prescriptions (
+    prescription_id INT AUTO_INCREMENT PRIMARY KEY,
+    visit_id INT NOT NULL,
+    medicine_name VARCHAR(100) NOT NULL,
+    dosage VARCHAR(50),
+    duration VARCHAR(50),
+    FOREIGN KEY (visit_id) REFERENCES visits(visit_id)
+);
+
+---- 1️ UC-4.1: Record Patient Visit (Transaction) ----
+START TRANSACTION;
+
+-- Insert visit record
+INSERT INTO visits (appointment_id, diagnosis, prescription)
+VALUES (1, 'High BP Follow-up', 'Continue previous medication');
+
+-- Update appointment status to COMPLETED
+UPDATE appointments
+SET status = 'Completed'
+WHERE appointment_id = 1;
+
+COMMIT;
+
+
+---- Verify ----
+
+SELECT * FROM visits WHERE appointment_id = 1;
+SELECT * FROM appointments WHERE appointment_id = 1;
+
+
+Sample Output (visits):
+
++----------+----------------+---------------------+--------------------------+---------------------+
+| visit_id | appointment_id | diagnosis           | prescription             | visit_date          |
++----------+----------------+---------------------+--------------------------+---------------------+
+| 2        | 1              | High BP Follow-up   | Continue previous meds   | 2026-02-09 10:45:12 |
++----------+----------------+---------------------+--------------------------+---------------------+
+
+---- 2️ UC-4.2: View Patient Medical History (JOIN) ----
+SELECT 
+    p.patient_id,
+    p.name AS patient_name,
+    d.name AS doctor_name,
+    v.visit_date,
+    v.diagnosis,
+    pr.medicine_name,
+    pr.dosage,
+    pr.duration
+FROM visits v
+JOIN appointments a ON v.appointment_id = a.appointment_id
+JOIN patients p ON a.patient_id = p.patient_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+LEFT JOIN prescriptions pr ON v.visit_id = pr.visit_id
+WHERE p.patient_id = 1
+ORDER BY v.visit_date DESC;
+
+
+Sample Output:
+
++------------+--------------+-------------+---------------------+---------------------+---------------+--------+----------+
+| patient_id | patient_name | doctor_name | visit_date          | diagnosis           | medicine_name | dosage | duration |
++------------+--------------+-------------+---------------------+---------------------+---------------+--------+----------+
+| 1          | Rahul Sharma | Dr. Mehta   | 2026-02-09 10:45:12 | High BP Follow-up   | Amlodipine    | 5mg    | 30 days  |
+| 1          | Rahul Sharma | Dr. Mehta   | 2026-02-08 23:49:14 | High BP             | Amlodipine    | 5mg    | 30 days  |
++------------+--------------+-------------+---------------------+---------------------+---------------+--------+----------+
+
+---- 3️ UC-4.3: Add Prescription Details (Batch INSERT) ----
+INSERT INTO prescriptions (visit_id, medicine_name, dosage, duration) VALUES
+(2, 'Amlodipine', '5mg', '30 days'),
+(2, 'Aspirin', '75mg', '15 days'),
+(2, 'Vitamin D', '1000 IU', '30 days');
+
+
+---- Verify ----
+
+SELECT * FROM prescriptions WHERE visit_id = 2;
+
+
+Sample Output:
+
++------------------+----------+---------------+--------+----------+
+| prescription_id | visit_id | medicine_name | dosage | duration |
++------------------+----------+---------------+--------+----------+
+| 1                | 2        | Amlodipine    | 5mg    | 30 days  |
+| 2                | 2        | Aspirin       | 75mg   | 15 days  |
+| 3                | 2        | Vitamin D     | 1000IU | 30 days  |
++------------------+----------+---------------+--------+----------+
