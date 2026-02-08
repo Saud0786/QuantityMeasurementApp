@@ -1,0 +1,179 @@
+---- Database & Tables (Schema Creation)  ---
+
+CREATE DATABASE hospital_db;
+USE hospital_db;
+
+---- Patients Table -----
+
+CREATE TABLE patients (
+    patient_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    dob DATE NOT NULL,
+    phone VARCHAR(15) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    address TEXT,
+    blood_group VARCHAR(5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+---- Doctors Table ------
+
+CREATE TABLE doctors (
+    doctor_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    specialization VARCHAR(100)
+);
+
+
+---- Appointments Table ----
+
+CREATE TABLE appointments (
+    appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    appointment_date DATETIME NOT NULL,
+    status VARCHAR(20) DEFAULT 'Scheduled',
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
+);
+
+
+---- Visits Table ----
+CREATE TABLE visits (
+    visit_id INT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INT NOT NULL,
+    diagnosis TEXT,
+    prescription TEXT,
+    visit_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+);
+
+
+
+---- 2️ UC-1.1: Register New Patient (INSERT)  -----
+
+---- Check uniqueness (phone/email)
+SELECT * FROM patients 
+WHERE phone = '9876543210' OR email = 'test@gmail.com';
+
+
+---- Insert new patient ----
+INSERT INTO patients (name, dob, phone, email, address, blood_group)
+VALUES ('Rahul Sharma', '1998-04-12', '9876543210', 'rahul@gmail.com', 'Delhi', 'O+');
+
+
+
+---- 3️ UC-1.2: Update Patient Information -----
+
+---- Search patient -----
+SELECT * FROM patients WHERE patient_id = 1;
+
+
++------------+--------------+------------+------------+-----------------+---------+-------------+---------------------+
+| patient_id | name         | dob        | phone      | email           | address | blood_group | created_at          |
++------------+--------------+------------+------------+-----------------+---------+-------------+---------------------+
+|          1 | Rahul Sharma | 1998-04-12 | 9876543210 | rahul@gmail.com | Delhi   | O+          | 2026-02-08 23:41:40 |
++------------+--------------+------------+------------+-----------------+---------+-------------+---------------------+
+
+
+
+
+
+---- Update record ---
+UPDATE patients
+SET address = 'Noida, UP', phone = '9998887777'
+WHERE patient_id = 1;
+
+SELECT * FROM patients WHERE patient_id = 1;
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+| patient_id | name         | dob        | phone      | email           | address   | blood_group | created_at          |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+|          1 | Rahul Sharma | 1998-04-12 | 9998887777 | rahul@gmail.com | Noida, UP | O+          | 2026-02-08 23:41:40 |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+
+
+
+
+---- 4️ UC-1.3: Search Patient Records ----
+
+---- Search by Name (LIKE) ----
+SELECT * FROM patients
+WHERE name LIKE '%Rahul%';
+
+
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+| patient_id | name         | dob        | phone      | email           | address   | blood_group | created_at          |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+|          1 | Rahul Sharma | 1998-04-12 | 9998887777 | rahul@gmail.com | Noida, UP | O+          | 2026-02-08 23:41:40 |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+
+
+
+---- Search by Phone ----
+SELECT * FROM patients
+WHERE phone = '9998887777';
+
+
+
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+| patient_id | name         | dob        | phone      | email           | address   | blood_group | created_at          |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+|          1 | Rahul Sharma | 1998-04-12 | 9998887777 | rahul@gmail.com | Noida, UP | O+          | 2026-02-08 23:41:40 |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+
+
+
+---- Search by Patient ID ----
+SELECT * FROM patients
+WHERE patient_id = 1;
+
+
+
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+| patient_id | name         | dob        | phone      | email           | address   | blood_group | created_at          |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+|          1 | Rahul Sharma | 1998-04-12 | 9998887777 | rahul@gmail.com | Noida, UP | O+          | 2026-02-08 23:41:40 |
++------------+--------------+------------+------------+-----------------+-----------+-------------+---------------------+
+
+
+
+
+---- 5️ UC-1.4: View Patient Visit History (JOIN Query) ----
+
+---- Sample Data (Doctor, Appointment, Visit) ----
+INSERT INTO doctors (name, specialization)
+VALUES ('Dr. Mehta', 'Cardiology');
+
+INSERT INTO appointments (patient_id, doctor_id, appointment_date)
+VALUES (1, 1, '2026-02-08 10:30:00');
+
+INSERT INTO visits (appointment_id, diagnosis, prescription)
+VALUES (1, 'High BP', 'Amlodipine 5mg daily');
+
+
+
+---- Visit History Query (With JOIN)  ----
+
+SELECT 
+    p.patient_id,
+    p.name AS patient_name,
+    d.name AS doctor_name,
+    v.visit_date,
+    v.diagnosis,
+    v.prescription
+FROM patients p
+JOIN appointments a ON p.patient_id = a.patient_id
+JOIN visits v ON a.appointment_id = v.appointment_id
+JOIN doctors d ON a.doctor_id = d.doctor_id
+WHERE p.patient_id = 1
+ORDER BY v.visit_date DESC;
+
+
+
++------------+--------------+-------------+---------------------+-----------+----------------------+
+| patient_id | patient_name | doctor_name | visit_date          | diagnosis | prescription         |
++------------+--------------+-------------+---------------------+-----------+----------------------+
+|          1 | Rahul Sharma | Dr. Mehta   | 2026-02-08 23:49:14 | High BP   | Amlodipine 5mg daily |
++------------+--------------+-------------+---------------------+-----------+----------------------+
