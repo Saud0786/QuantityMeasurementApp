@@ -1,0 +1,14 @@
+# Ignore everything by default
+
+
+# Eclipse / Maven junk
+.project
+.classpath
+.settings/
+target/
+bin/
+out/
+build/
+dist/
+.DS_Store
+*.log
