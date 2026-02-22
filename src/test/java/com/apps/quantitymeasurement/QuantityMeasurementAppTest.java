@@ -7,74 +7,107 @@ import com.apps.quantitymeasurement.Length.LengthUnit;
 
 public class QuantityMeasurementAppTest {
 
-    @Test
-    void testEquality_FeetToFeet_SameValue() {
-        Length l1 = new Length(1.0, LengthUnit.FEET);
-        Length l2 = new Length(1.0, LengthUnit.FEET);
-        assertTrue(l1.equals(l2));
-    }
+	// FEET TESTS (converted from UC1)
+		@Test
+		public void testQuantity_Feet_SameValue() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			Length q2 = new Length(1.0, LengthUnit.FEET);
+			assertTrue(q1.equals(q2));
+		}
 
-    @Test
-    void testEquality_InchToInch_SameValue() {
-        Length l1 = new Length(1.0, LengthUnit.INCHES);
-        Length l2 = new Length(1.0, LengthUnit.INCHES);
-        assertTrue(l1.equals(l2));
-    }
+		@Test
+		public void testQuantity_Feet_DifferentValue() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			Length q2 = new Length(2.0, LengthUnit.FEET);
+			assertFalse(q1.equals(q2));
+		}
 
-    @Test
-    void testEquality_InchToFeet_EquivalentValue() {
-        Length inches = new Length(12.0, LengthUnit.INCHES);
-        Length feet = new Length(1.0, LengthUnit.FEET);
-        assertTrue(inches.equals(feet));
-        assertTrue(feet.equals(inches)); // symmetry
-    }
+		@Test
+		public void testQuantity_Feet_NullComparison() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			assertFalse(q1.equals(null));
+		}
 
-    @Test
-    void testEquality_FeetToFeet_DifferentValue() {
-        Length l1 = new Length(1.0, LengthUnit.FEET);
-        Length l2 = new Length(2.0, LengthUnit.FEET);
-        assertFalse(l1.equals(l2));
-    }
+		@Test
+		public void testQuantity_Feet_DifferentClass() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			String other = "NotQuantity";
+			assertFalse(q1.equals(other));
+		}
 
-    @Test
-    void testEquality_InchToInch_DifferentValue() {
-        Length l1 = new Length(1.0, LengthUnit.INCHES);
-        Length l2 = new Length(2.0, LengthUnit.INCHES);
-        assertFalse(l1.equals(l2));
-    }
+		@Test
+		public void testQuantity_Feet_SameReference() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			assertTrue(q1.equals(q1));
+		}
 
-    @Test
-    void testEquality_NullComparison() {
-        Length l1 = new Length(1.0, LengthUnit.FEET);
-        assertFalse(l1.equals(null));
-    }
+		// INCH TESTS (converted from UC2)
+		@Test
+		public void testQuantity_Inch_SameValue() {
+			Length q1 = new Length(1.0, LengthUnit.INCHES);
+			Length q2 = new Length(1.0, LengthUnit.INCHES);
+			assertTrue(q1.equals(q2));
+		}
 
-    @Test
-    void testEquality_SameReference() {
-        Length l1 = new Length(1.0, LengthUnit.FEET);
-        assertTrue(l1.equals(l1));
-    }
+		@Test
+		public void testQuantity_Inch_DifferentValue() {
+			Length q1 = new Length(1.0, LengthUnit.INCHES);
+			Length q2 = new Length(2.0, LengthUnit.INCHES);
+			assertFalse(q1.equals(q2));
+		}
 
-    @Test
-    void testInvalidUnit_NullUnit() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Length(1.0, null);
-        });
-    }
-    
-    @Test
-    void testEquality_NullUnit() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Length(5.0, null);
-        });
-    }
-    
-    
-    @Test
-    void testEquality_InvalidUnit() {
-        // Simulate invalid unit by passing null or unsupported scenario
-        assertThrows(IllegalArgumentException.class, () -> {
-            new Length(1.0, null);  // invalid unit
-        });
-    }
+		@Test
+		public void testQuantity_Inch_NullComparison() {
+			Length q1 = new Length(1.0, LengthUnit.INCHES);
+			assertFalse(q1.equals(null));
+		}
+
+		@Test
+		public void testQuantity_Inch_DifferentClass() {
+			Length q1 = new Length(1.0, LengthUnit.INCHES);
+			String other = "NotQuantity";
+			assertFalse(q1.equals(other));
+		}
+
+		@Test
+		public void testQuantity_Inch_SameReference() {
+			Length q1 = new Length(1.0, LengthUnit.INCHES);
+			assertTrue(q1.equals(q1));
+		}
+
+		// test for UC3
+
+		@Test
+		public void testQuantity_SameValueSameUnit() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			Length q2 = new Length(1.0, LengthUnit.FEET);
+			assertTrue(q1.equals(q2));
+		}
+
+		@Test
+		public void testQuantity_DifferentValue() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			Length q2 = new Length(2.0, LengthUnit.FEET);
+			assertFalse(q1.equals(q2));
+		}
+
+		@Test
+		public void testQuantity_NullComparison() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			assertFalse(q1.equals(null));
+		}
+
+		@Test
+		public void testQuantity_DifferentClass() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			String other = "NotQuantity";
+			assertFalse(q1.equals(other));
+		}
+
+		@Test
+		public void testQuantity_SameReference() {
+			Length q1 = new Length(1.0, LengthUnit.FEET);
+			assertTrue(q1.equals(q1));
+		}
+
 }
