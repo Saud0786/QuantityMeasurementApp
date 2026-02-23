@@ -1,76 +1,130 @@
-# UC13 – Centralized Arithmetic Logic to Enforce DRY in Quantity Operations
+# UC14: Temperature Measurement with Selective Arithmetic Support
 
-## Overview  
-UC13 refactors the arithmetic operations (`add`, `subtract`, `divide`) introduced in UC12 to remove
-code duplication and enforce the **DRY (Don’t Repeat Yourself)** principle.  
-The public API and behavior remain unchanged; only the **internal implementation** is improved by
-centralizing validation, base-unit conversion, and arithmetic execution into reusable helper
-methods.
+## Description
 
-This refactoring improves maintainability, consistency, readability, and scalability, and prepares
-the system for adding future arithmetic operations (e.g., multiplication, modulo) without
-duplicating logic.
+UC14 extends the Quantity Measurement Application to support **temperature measurements** alongside existing categories such as **length, weight, and volume**.
 
----
+Unlike length, weight, and volume (which support arithmetic operations like addition, subtraction, and division), **temperature is fundamentally different**:
 
-## What Changed in UC13 (High Level)
+- Temperature values support:
+  - Equality comparison  
+  - Unit conversion (Celsius ↔ Fahrenheit ↔ Kelvin)
 
-- Introduced a **centralized validation helper** for all arithmetic operations  
-- Introduced a **single core arithmetic helper** that performs base-unit normalization and
-  arithmetic  
-- Introduced an **enum-based arithmetic dispatcher** (`ArithmeticOperation`) to avoid `if/else`
-  or `switch` blocks  
-- Refactored `add`, `subtract`, and `divide` to delegate to these helpers  
-- **No changes to public method signatures or behavior**
+- Temperature values do **NOT** support:
+  - Addition  
+  - Subtraction  
+  - Division  
+
+Operations such as `100°C + 50°C` or `100°C ÷ 50°C` are physically meaningless in the context of absolute temperature values. UC14 enforces these constraints while keeping the existing architecture backward compatible.
 
 ---
 
-## What Did NOT Change
+## Objectives
 
-- No new features or user-facing functionality  
-- No changes to `IMeasurable`, `LengthUnit`, `WeightUnit`, `VolumeUnit`  
-- No changes to existing test cases (UC12 tests pass unchanged)  
-- No change in arithmetic results or error semantics
-
----
-
-## Motivation (Why UC13 Was Needed)
-
-The UC12 implementation repeated the same logic across multiple methods:
-
-- Null checks and unit validation  
-- Cross-category compatibility checks  
-- Finiteness checks for numeric values  
-- Base-unit conversions  
-- Target unit handling  
-
-This duplication violated DRY, increased maintenance cost, and made the code harder to read and
-extend. UC13 centralizes this logic into private helpers, creating a **single source of truth** for
-validation and arithmetic.
+- Add a new measurement category: **Temperature**
+- Support temperature units:
+  - Celsius (CELSIUS) – base unit  
+  - Fahrenheit (FAHRENHEIT)  
+  - Kelvin (KELVIN)  
+- Enable:
+  - Equality comparison between temperature quantities  
+  - Conversion between temperature units  
+- Restrict:
+  - Arithmetic operations (add, subtract, divide) for temperature quantities  
+- Ensure:
+  - No breaking changes to UC1–UC13  
+  - Cross-category operations remain disallowed  
+  - Existing length, weight, and volume behavior remains unchanged  
 
 ---
 
-## Refactoring Design
+## Preconditions
 
-### Centralized Validation
-
-A single private method validates all operands and (when applicable) target units.  
-All arithmetic operations call this method, ensuring consistent error handling and messages.
-
-### Core Arithmetic Helper
-
-A single private method:
-1. Converts both operands to base units  
-2. Applies the requested arithmetic operation  
-3. Returns the base-unit result  
-
-Public methods then convert the result to the requested target unit (for add/subtract) or return
-a dimensionless scalar (for divide).
-
-### Enum-Based Operation Dispatch
-
-An internal `ArithmeticOperation` enum encapsulates operation-specific logic (`ADD`, `SUBTRACT`,
-`DIVIDE`). This avoids scattered conditionals and makes it trivial to add future operations like
-`MULTIPLY` without changing validation or conversion code.
+- UC1–UC13 are fully implemented and tested.
+- `Quantity<U extends IMeasurable>` supports:
+  - Equality comparison  
+  - Conversion  
+  - Arithmetic operations for non-temperature categories  
+- `IMeasurable` interface remains unchanged.
+- LengthUnit, WeightUnit, and VolumeUnit continue to work without modification.
 
 ---
+
+
+A new `TemperatureUnit` enum is introduced with the following constants:
+
+- `CELSIUS` (base unit)  
+- `FAHRENHEIT`  
+- `KELVIN`  
+
+Temperature conversions are implemented using **formulas** (non-linear conversion):
+
+- Celsius → Fahrenheit
+- Fahrenheit → Celsius
+- Kelvin → Celsius
+
+
+---
+
+### 2. Equality Comparison
+
+Temperature quantities can be compared across units by converting both values to the base unit (Celsius) and comparing with epsilon tolerance.
+
+Examples:
+
+- `0°C == 32°F`  
+- `100°C == 212°F`  
+- `0°C == 273.15K`  
+- `-40°C == -40°F`  
+
+---
+
+### 3. Unit Conversion
+
+Temperature quantities can be converted between all supported units.
+
+Examples:
+
+- `100°C → 212°F`  
+- `32°F → 0°C`  
+- `0°C → 273.15K`  
+- `-40°C → -40°F`  
+
+---
+
+### 4. Unsupported Arithmetic Operations
+
+Arithmetic operations on temperature quantities are explicitly **disallowed**:
+
+- `add()` → throws `UnsupportedOperationException`  
+- `subtract()` → throws `UnsupportedOperationException`  
+- `divide()` → throws `UnsupportedOperationException`  
+
+This prevents logically invalid operations on absolute temperature values.
+
+---
+
+### 5. Cross-Category Safety
+
+Temperature quantities cannot be compared or combined with other categories:
+
+- Temperature vs Length → not equal  
+- Temperature vs Weight → not equal  
+- Temperature vs Volume → not equal  
+
+Generic type safety and runtime checks ensure category isolation.
+
+---
+
+## Example Usage
+
+### Equality
+
+```java
+new Quantity<>(0.0, TemperatureUnit.CELSIUS)
+  .equals(new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT)); // true
+
+new Quantity<>(-40.0, TemperatureUnit.CELSIUS)
+  .equals(new Quantity<>(-40.0, TemperatureUnit.FAHRENHEIT)); // true
+```
+  
