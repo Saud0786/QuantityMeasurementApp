@@ -1,92 +1,68 @@
-# UC11 – Volume Measurement: Equality, Conversion, and Addition  
-(Litre, Millilitre, Gallon)
+# UC12 – Subtraction and Division Operations on Quantity Measurements
 
-## Overview  
-UC11 extends the Quantity Measurement Application to support **volume measurements** along with existing **length** and **weight** categories introduced up to UC10.  
+## 1. Introduction  
+UC12 extends the Quantity Measurement Application by introducing two additional arithmetic operations:
+**subtraction** and **division** on generic quantities.  
+Earlier use cases (UC1–UC11) supported equality comparison, unit conversion, and addition across
+multiple measurement categories such as **length**, **weight**, and **volume**.  
 
-This use case validates that the **generic architecture from UC10** scales seamlessly when a new measurement category is added. No changes are required in the existing `Quantity<U>`, `IMeasurable`, or application logic.  
-
-A new `VolumeUnit` enum implementing `IMeasurable` is introduced to support volume-specific units and conversions.
-
----
-
-## Objectives  
-
-- Add support for volume measurement  
-- Reuse the existing generic `Quantity<U extends IMeasurable>` class  
-- Ensure no changes to existing UC1–UC10 implementation  
-- Validate scalability of the refactored architecture  
+With UC12, the system evolves into a more complete arithmetic model for quantities, allowing users
+to compute differences between measurements and ratios of measurements, while preserving the
+generic and extensible architecture introduced in UC10.
 
 ---
 
-## Supported Volume Units  
+## 2. Scope  
 
-| Unit        | Symbol | Conversion to Base (Litre) |
-|-------------|--------|-----------------------------|
-| Litre       | L      | 1.0 (Base Unit)             |
-| Millilitre  | mL     | 0.001                       |
-| Gallon (US) | gal    | 3.78541                     |
+This use case covers:
 
-Base unit for volume: **Litre (L)**  
+- Subtraction between two quantities of the **same measurement category**
+- Division to compute a **dimensionless ratio** between two quantities
+- Cross-unit arithmetic within the same category (e.g., feet vs inches, litre vs millilitre)
+- Explicit and implicit target unit support for subtraction
+- Strong validation and error handling
+- Backward compatibility with UC1–UC11  
 
----
+The following categories are supported:
 
-## Design  
-
-UC11 introduces only one new component:
-
-
-All operations such as equality, conversion, and addition are handled by the existing generic `Quantity<U>` class without any modification.
+- Length (`LengthUnit`)
+- Weight (`WeightUnit`)
+- Volume (`VolumeUnit`)
 
 ---
 
-## Functionalities  
+## 3. Design Overview  
 
-### Equality Comparison  
-- 1 L = 1000 mL  
-- 1 gal = 3.78541 L  
-- Equality is checked by converting values to the base unit (litre)  
-- Floating-point precision is handled using epsilon tolerance  
+UC12 follows the same design principles established in UC10:
 
-### Unit Conversion  
-Examples:  
-- 1 L → 1000 mL  
-- 1000 mL → 1 L  
-- 1 gal → 3.78541 L  
-- 1 L → 0.264172 gal  
+- **Generic Quantity Class**  
+  All arithmetic logic is implemented inside `Quantity<U extends IMeasurable>`.  
+  No changes are required in unit enums or in the `IMeasurable` interface.
 
-### Addition  
-Examples:  
-- 1 L + 1000 mL = 2 L  
-- 500 mL + 0.5 L = 1000 mL  
-- 1 gal + 3.78541 L ≈ 2 gal  
+- **Separation of Concerns**  
+  - Units handle conversion logic  
+  - Quantity handles arithmetic and comparison  
+  - Application layer handles demonstration  
 
-Supports:  
-- Implicit target unit (first operand’s unit)  
-- Explicit target unit specification  
-
-### Cross-Category Safety  
-- Volume cannot be compared or added with length or weight  
-- Generic type constraints prevent mixing categories  
-- Runtime checks ensure category isolation  
+- **Open–Closed Principle**  
+  The system is open for extension (new operations) and closed for modification
+  (existing functionality remains unchanged).
 
 ---
 
-## Test Coverage  
+## 4. New APIs Introduced  
 
-UC11 test cases cover:  
+### Subtraction  
 
-- Same-unit equality (L, mL, gal)  
-- Cross-unit equality (L ↔ mL, L ↔ gal, mL ↔ gal)  
-- Unit conversion between all unit pairs  
-- Addition with same and different units  
-- Addition with explicit target unit  
-- Zero, negative, large, and small values  
-- Floating-point precision handling  
-- Immutability of `Quantity` objects  
-- Volume vs length/weight incompatibility  
-- Backward compatibility with UC1–UC10 test cases  
+```java
+Quantity<U> subtract(Quantity<U> other)
+Quantity<U> subtract(Quantity<U> other, U targetUnit)
+```
 
----
+### Division
 
 
+```java
+Quantity<U> divide(Quantity<U> other)
+Quantity<U> divide(Quantity<U> other, U targetUnit)
+```
