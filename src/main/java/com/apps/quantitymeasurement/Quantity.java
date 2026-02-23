@@ -58,11 +58,15 @@ public class Quantity<U extends IMeasurable> {
     }
 
     public Quantity<U> convertTo(U targetUnit) {
-        if (targetUnit == null)
-            throw new IllegalArgumentException("Target unit cannot be null");
+        if (targetUnit == null) {
+            throw new IllegalArgumentException("Target unit must not be null");
+        }
+        if (!this.unit.getClass().equals(targetUnit.getClass())) {
+            throw new IllegalArgumentException("Cannot convert between different measurement categories");
+        }
 
-        double baseValue = toBaseUnit(); // step1 base
-        double convertedValue = targetUnit.convertFromBaseUnit(baseValue); // step2 target
+        double baseValue = this.unit.convertToBaseUnit(this.value);
+        double convertedValue = targetUnit.convertFromBaseUnit(baseValue);
 
         return new Quantity<>(convertedValue, targetUnit);
     }
@@ -117,8 +121,14 @@ public class Quantity<U extends IMeasurable> {
     }
     
     private double performBaseArithmetic(Quantity<U> other, ArithmeticOperation operation) {
+
+        // NEW: Validate operation support for both units
+        this.unit.validateOperationSupport(operation.name());
+        other.unit.validateOperationSupport(operation.name());
+
         double baseThis = this.unit.convertToBaseUnit(this.value);
         double baseOther = other.unit.convertToBaseUnit(other.value);
+
         return operation.compute(baseThis, baseOther);
     }
 
