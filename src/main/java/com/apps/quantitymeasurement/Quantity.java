@@ -71,4 +71,8 @@ public class Quantity<U extends IMeasurable> {
     public int hashCode() {
         return Objects.hash(Math.round(toBaseUnit() * 100.0) / 100.0);
     }
+    
+    public String toString() {
+    	return value +" " +unit;
+    }
 }
