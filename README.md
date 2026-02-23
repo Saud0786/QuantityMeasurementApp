@@ -1,68 +1,76 @@
-# UC12 – Subtraction and Division Operations on Quantity Measurements
+# UC13 – Centralized Arithmetic Logic to Enforce DRY in Quantity Operations
 
-## 1. Introduction  
-UC12 extends the Quantity Measurement Application by introducing two additional arithmetic operations:
-**subtraction** and **division** on generic quantities.  
-Earlier use cases (UC1–UC11) supported equality comparison, unit conversion, and addition across
-multiple measurement categories such as **length**, **weight**, and **volume**.  
+## Overview  
+UC13 refactors the arithmetic operations (`add`, `subtract`, `divide`) introduced in UC12 to remove
+code duplication and enforce the **DRY (Don’t Repeat Yourself)** principle.  
+The public API and behavior remain unchanged; only the **internal implementation** is improved by
+centralizing validation, base-unit conversion, and arithmetic execution into reusable helper
+methods.
 
-With UC12, the system evolves into a more complete arithmetic model for quantities, allowing users
-to compute differences between measurements and ratios of measurements, while preserving the
-generic and extensible architecture introduced in UC10.
-
----
-
-## 2. Scope  
-
-This use case covers:
-
-- Subtraction between two quantities of the **same measurement category**
-- Division to compute a **dimensionless ratio** between two quantities
-- Cross-unit arithmetic within the same category (e.g., feet vs inches, litre vs millilitre)
-- Explicit and implicit target unit support for subtraction
-- Strong validation and error handling
-- Backward compatibility with UC1–UC11  
-
-The following categories are supported:
-
-- Length (`LengthUnit`)
-- Weight (`WeightUnit`)
-- Volume (`VolumeUnit`)
+This refactoring improves maintainability, consistency, readability, and scalability, and prepares
+the system for adding future arithmetic operations (e.g., multiplication, modulo) without
+duplicating logic.
 
 ---
 
-## 3. Design Overview  
+## What Changed in UC13 (High Level)
 
-UC12 follows the same design principles established in UC10:
-
-- **Generic Quantity Class**  
-  All arithmetic logic is implemented inside `Quantity<U extends IMeasurable>`.  
-  No changes are required in unit enums or in the `IMeasurable` interface.
-
-- **Separation of Concerns**  
-  - Units handle conversion logic  
-  - Quantity handles arithmetic and comparison  
-  - Application layer handles demonstration  
-
-- **Open–Closed Principle**  
-  The system is open for extension (new operations) and closed for modification
-  (existing functionality remains unchanged).
+- Introduced a **centralized validation helper** for all arithmetic operations  
+- Introduced a **single core arithmetic helper** that performs base-unit normalization and
+  arithmetic  
+- Introduced an **enum-based arithmetic dispatcher** (`ArithmeticOperation`) to avoid `if/else`
+  or `switch` blocks  
+- Refactored `add`, `subtract`, and `divide` to delegate to these helpers  
+- **No changes to public method signatures or behavior**
 
 ---
 
-## 4. New APIs Introduced  
+## What Did NOT Change
 
-### Subtraction  
+- No new features or user-facing functionality  
+- No changes to `IMeasurable`, `LengthUnit`, `WeightUnit`, `VolumeUnit`  
+- No changes to existing test cases (UC12 tests pass unchanged)  
+- No change in arithmetic results or error semantics
 
-```java
-Quantity<U> subtract(Quantity<U> other)
-Quantity<U> subtract(Quantity<U> other, U targetUnit)
-```
+---
 
-### Division
+## Motivation (Why UC13 Was Needed)
 
+The UC12 implementation repeated the same logic across multiple methods:
 
-```java
-Quantity<U> divide(Quantity<U> other)
-Quantity<U> divide(Quantity<U> other, U targetUnit)
-```
+- Null checks and unit validation  
+- Cross-category compatibility checks  
+- Finiteness checks for numeric values  
+- Base-unit conversions  
+- Target unit handling  
+
+This duplication violated DRY, increased maintenance cost, and made the code harder to read and
+extend. UC13 centralizes this logic into private helpers, creating a **single source of truth** for
+validation and arithmetic.
+
+---
+
+## Refactoring Design
+
+### Centralized Validation
+
+A single private method validates all operands and (when applicable) target units.  
+All arithmetic operations call this method, ensuring consistent error handling and messages.
+
+### Core Arithmetic Helper
+
+A single private method:
+1. Converts both operands to base units  
+2. Applies the requested arithmetic operation  
+3. Returns the base-unit result  
+
+Public methods then convert the result to the requested target unit (for add/subtract) or return
+a dimensionless scalar (for divide).
+
+### Enum-Based Operation Dispatch
+
+An internal `ArithmeticOperation` enum encapsulates operation-specific logic (`ADD`, `SUBTRACT`,
+`DIVIDE`). This avoids scattered conditionals and makes it trivial to add future operations like
+`MULTIPLY` without changing validation or conversion code.
+
+---
