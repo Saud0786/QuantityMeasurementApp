@@ -114,4 +114,6 @@ Length (UC1–UC8) remains fully functional and independent.
 - Weight mirrors Length design (UC8 pattern)  
 - Scalable for Volume, Temperature, etc.  
 - Clean separation between categories  
-- Enterprise-ready extensible design  
+- Enterprise-ready extensible design
+
+**Code Link:** [UC-9 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC9-WeightMeasurement/src)
