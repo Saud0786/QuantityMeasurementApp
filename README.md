@@ -88,4 +88,6 @@ Example: `1 FEET + 12 INCHES in YARDS ≈ 0.667 YARDS`
 - Scalable unit system  
 - Clean and maintainable architecture  
 - Fully backward compatible (UC1–UC6 preserved)
+
+**Code Link:** [UC-7 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC7-TargetUnitAddition/src)
   
