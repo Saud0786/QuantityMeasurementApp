@@ -89,3 +89,7 @@ Example: `1 FEET + 12 INCHES = 2 FEET`
 - Domain-driven arithmetic behavior  
 - Scalable for future measurement operations  
 - Backward compatible (UC1–UC5 preserved)  
+
+---
+
+**Code Link:** [UC-6 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC6-UnitAddition/src)
