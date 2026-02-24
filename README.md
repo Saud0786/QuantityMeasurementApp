@@ -66,3 +66,5 @@ Quantity<U> subtract(Quantity<U> other, U targetUnit)
 Quantity<U> divide(Quantity<U> other)
 Quantity<U> divide(Quantity<U> other, U targetUnit)
 ```
+
+**Code Link:** [UC-12 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC12-Subtraction-and-Division-Operations/src)
