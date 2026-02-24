@@ -76,4 +76,4 @@ An internal `ArithmeticOperation` enum encapsulates operation-specific logic (`A
 ---
 
 
-**Code Link:** [UC-1 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC13-Centralized-Arithmetic-Logic/src)
+**Code Link:** [UC-13 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC13-Centralized-Arithmetic-Logic/src)
