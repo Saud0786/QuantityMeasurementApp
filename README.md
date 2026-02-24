@@ -58,3 +58,8 @@ Equal: `true`
 
 Violates **DRY principle** since `Feet` and `Inches` classes contain duplicated logic.  
 A better design would use a **generic Quantity class** or **unit parameter** to reduce redundancy.
+
+
+---
+
+**Code Link:** [UC-2 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC2-InchEquality/src)
