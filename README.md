@@ -71,3 +71,7 @@ Equal: `true`
 - Centralized conversion factors  
 - Fully backward compatible  
 - Clean, maintainable architecture  
+
+---
+
+**Code Link:** [UC-1 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC4-YardEquality/src)
