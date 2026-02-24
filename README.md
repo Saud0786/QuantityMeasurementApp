@@ -43,3 +43,7 @@ Equal: `true`
 - Type safety  
 - Encapsulation  
 - Unit testing basics  
+
+---
+
+**Code Link:** [UC-1 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC1-FeetEquality/src)
