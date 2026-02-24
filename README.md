@@ -92,3 +92,7 @@ New measurement categories can follow the same pattern:
 4. Keep quantity focused on arithmetic and comparison  
 
 Architecture now supports **multi-category measurement systems** without refactoring existing code.
+
+---
+
+**Code Link:** [UC-8 feature](https://github.com/Saud0786/QuantityMeasurementApp/tree/feature/UC8-StandaloneUnit/src)
