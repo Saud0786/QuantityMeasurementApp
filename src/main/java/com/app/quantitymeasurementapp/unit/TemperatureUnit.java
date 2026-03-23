@@ -2,7 +2,7 @@ package com.app.quantitymeasurementapp.unit;
 
 import java.util.function.Function;
 
-public enum Temperature implements IMeasurable {
+public enum TemperatureUnit implements IMeasurable {
 	    CELSIUS(false),
 	    FAHRENHEIT(true),
         KELVIN(false);
@@ -20,9 +20,7 @@ public enum Temperature implements IMeasurable {
 	    Function<Double, Double> toBase;
 	    Function<Double, Double> fromBase;
 
-	    private final SupportArithemetic supportArithemetic = () -> false;
-
-	    Temperature(boolean isFahrenheit) {
+	    TemperatureUnit(boolean isFahrenheit) {
 
 	        if (isFahrenheit) {
 	            toBase = FARENHEIT_TO_CELCIUS;
@@ -41,16 +39,8 @@ public enum Temperature implements IMeasurable {
 	    @Override
 	    public double convertFromBaseUnit(double value) { return fromBase.apply(value); }
         
-	    @Override
-	    public boolean supportsArithemetics() { return supportArithemetic.isSupported(); }
-
-	    @Override
-	    public void validateOperationSupport(String operation) {
-	    	if (!supportArithemetic.isSupported() ) {
-	    		String message = this.name() + " does not support " + operation + " operations.";
-	    		throw new UnsupportedOperationException(message);}
-	    }
-        public double convertTo(double value,Temperature targetUnit) {
+	    
+        public double convertTo(double value,TemperatureUnit targetUnit) {
         	 if (this == targetUnit) {
         	        return value;
         	    }
@@ -73,7 +63,7 @@ public enum Temperature implements IMeasurable {
 		}
 		@Override
 		public IMeasurable getUnitInstance(String unitName) {
-			for(Temperature temp : Temperature.values()) {
+			for(TemperatureUnit temp : TemperatureUnit.values()) {
 				if(temp.equals(unitName)) {
 					return temp;
 				}
