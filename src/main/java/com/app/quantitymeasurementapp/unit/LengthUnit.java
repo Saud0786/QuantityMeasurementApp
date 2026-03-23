@@ -25,13 +25,11 @@ public enum LengthUnit implements IMeasurable{
 
 	@Override
 	public String getUnitName() {
-		// TODO Auto-generated method stub
 		return LengthUnit.this.name();
 	}
 
 	@Override
 	public String getMeasurementType() {
-		// TODO Auto-generated method stub
 		return this.getClass().getSimpleName();
 	}
 
