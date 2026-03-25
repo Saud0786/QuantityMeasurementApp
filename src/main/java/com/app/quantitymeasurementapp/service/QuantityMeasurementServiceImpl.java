@@ -215,6 +215,14 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
 		validateModels(m1, m2);
 		if (mT != null)
 			validateModels(m1, mT);
+		
+		if (m1.getUnit() instanceof TemperatureUnit || m2.getUnit() instanceof TemperatureUnit) {
+	        if (opType == Operation.DIVIDE || opType == Operation.ADD || opType == Operation.SUBTRACT 
+	            || opType == Operation.ADD_TO_TARGET || opType == Operation.SUBTRACT_TO_TARGET) {
+	            
+	            throw new UnsupportedOperationException("Arithmetic operations not supported for TemperatureUnit");
+	        }
+	    }
 
 		// 3. Domain Call (Quantity.java handles the actual Math)
 		Quantity<IMeasurable> q1 = new Quantity<>(m1.getValue(), m1.getUnit());

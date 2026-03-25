@@ -1,5 +1,5 @@
-package com.app.quantity_measurement_app;
 
+package com.app.quantitymeasurementapp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -84,7 +84,7 @@ class QuantityMeasurementAppApplicationTests {
         String text = model.toString();
 
         assertTrue(text.contains("10.0"));
-        assertTrue(text.contains("KILOGRAM"));
+        assertTrue(text.contains("KG"));
     }
 
     // ----------------------------------------------------
@@ -146,7 +146,7 @@ class QuantityMeasurementAppApplicationTests {
 
     @Test
     void testService_Add_CrossCategory_Error() {
-        QuantityInputDTO qt = new QuantityInputDTO(new QuantityDTO(1.0, "FEET","LengthUnit"), new QuantityDTO(1.0, "KILOGRAM","WeightUnit"), null);
+        QuantityInputDTO qt = new QuantityInputDTO(new QuantityDTO(1.0, "FEET","LengthUnit"), new QuantityDTO(1.0, "KG","WeightUnit"), null);
         assertThrows(CategoryMismatchException.class, ()->{
             controller.performAddition(qt);
         });
@@ -159,7 +159,7 @@ class QuantityMeasurementAppApplicationTests {
 
     @Test
     void testService_Subtract_WithTargetUnit_Success() { 
-        QuantityInputDTO qt = new QuantityInputDTO(new QuantityDTO(5.0, "KILOGRAM","WeightUnit"), new QuantityDTO(2000.0, "GRAM","WeightUnit"), new QuantityDTO(0.0, "GRAM", "WeightUnit"));
+        QuantityInputDTO qt = new QuantityInputDTO(new QuantityDTO(5.0, "KG","WeightUnit"), new QuantityDTO(2000.0, "GRAM","WeightUnit"), new QuantityDTO(0.0, "GRAM", "WeightUnit"));
 
         ResponseEntity<QuantityMeasurementDTO> result = controller.performSubtractionWithTargetUnit(qt);
 
@@ -220,7 +220,7 @@ class QuantityMeasurementAppApplicationTests {
                 ).getBody().isError());
         
         assertFalse(controller.performComparison(
-                new QuantityInputDTO(new QuantityDTO(1.0, "KILOGRAM","WeightUnit"), new QuantityDTO(1000.0, "GRAM","WeightUnit"), null)
+                new QuantityInputDTO(new QuantityDTO(1.0, "KG","WeightUnit"), new QuantityDTO(1000.0, "GRAM","WeightUnit"), null)
                 ).getBody().isError());
         
         assertFalse(controller.performComparison(
