@@ -2,9 +2,12 @@
 package com.app.quantitymeasurementapp;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import javax.crypto.SecretKey;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +24,8 @@ import com.app.quantitymeasurementapp.exception.QuantityMeasurementException;
 import com.app.quantitymeasurementapp.unit.IMeasurable;
 import com.app.quantitymeasurementapp.unit.LengthUnit;
 import com.app.quantitymeasurementapp.unit.WeightUnit;
+import io.jsonwebtoken.Jwts;
+import java.util.Base64;
 
 @SpringBootTest
 class QuantityMeasurementAppApplicationTests {
@@ -234,5 +239,11 @@ class QuantityMeasurementAppApplicationTests {
             QuantityInputDTO qt = new QuantityInputDTO(new QuantityDTO(0.0, "CELSIUS", "TemperatureUnit"), new QuantityDTO(32.0, "FAHRENHEIT", "TemperatureUnit"), null);
         		controller.performDivision(qt);
         });
+    }
+    
+    @Test
+    void addJwtPass() {
+    	SecretKey key = Jwts.SIG.HS384.key().build();
+    	System.out.println(Base64.getEncoder().encodeToString(key.getEncoded()));
     }
 }
