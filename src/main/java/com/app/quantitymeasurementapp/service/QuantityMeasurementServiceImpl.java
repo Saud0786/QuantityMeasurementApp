@@ -81,37 +81,54 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
 	}
 	
 	@Override
-	public QuantityMeasurementDTO convert(QuantityDTO thisQuantityDTO, QuantityDTO thatQuantityDTO) {		
-		// 1. Map
-		QuantityModel<IMeasurable> m1 = mapToModel(thisQuantityDTO);
-		QuantityModel<IMeasurable> m2 = mapToModel(thatQuantityDTO);
-		
-		// 3. Create Domain Objects
-	    Quantity<IMeasurable> q1 = new Quantity<>(m1.getValue(), m1.getUnit());
-	    
-	    double value1 = q1.convertTo(m2.getUnit());
-	    
-	    //4. save to repository
-	    QuantityMeasurementEntity entity = new QuantityMeasurementEntity(
-	    			thisQuantityDTO.value,
-	    			thisQuantityDTO.unit,
-	    			thisQuantityDTO.measurementType,
-	    			thatQuantityDTO.value,
-	    			thatQuantityDTO.unit,
-	    			thatQuantityDTO.measurementType,
-	    			Operation.CONVERSION.name(),
-	    			value1,
-	    			thisQuantityDTO.unit,
-	    			thisQuantityDTO.measurementType,
-	    			"null",
-	    			false,
-	    			"null"
-	    		);
-	    
-	    repository.save(entity);
-	    
-	    return new QuantityMeasurementDTO().from(entity);
-	}
+public QuantityMeasurementDTO convert(QuantityDTO thisQuantityDTO, QuantityDTO thatQuantityDTO) {
+
+    // 1. Map DTO → Model
+    QuantityModel<IMeasurable> m1 = mapToModel(thisQuantityDTO);
+    QuantityModel<IMeasurable> m2 = mapToModel(thatQuantityDTO);
+
+    // 2. Validate (optional but recommended)
+    if (m1 == null || m2 == null) {
+        throw new QuantityMeasurementException("Invalid input for conversion");
+    }
+
+    if (m1.getUnit().getClass() != m2.getUnit().getClass()) {
+        throw new CategoryMismatchException("Cannot convert between different measurement types");
+    }
+
+    // 3. Create domain object
+    Quantity<IMeasurable> q1 = new Quantity<>(m1.getValue(), m1.getUnit());
+
+    // 4. Perform conversion
+    double convertedValue = q1.convertTo(m2.getUnit());
+
+    // 5. Save to DB (✅ FIX APPLIED HERE)
+    QuantityMeasurementEntity entity = new QuantityMeasurementEntity(
+            thisQuantityDTO.getValue(),
+            thisQuantityDTO.getUnit(),
+            thisQuantityDTO.getMeasurementType(),
+
+            thatQuantityDTO.getValue(),
+            thatQuantityDTO.getUnit(),
+            thatQuantityDTO.getMeasurementType(),
+
+            Operation.CONVERSION.name(),
+
+            convertedValue,
+
+            thatQuantityDTO.getUnit(),              // ✅ FIXED (target unit)
+            thatQuantityDTO.getMeasurementType(),   // ✅ FIXED (target type)
+
+            "null",
+            false,
+            "null"
+    );
+
+    repository.save(entity);
+
+    // 6. Return response
+    return new QuantityMeasurementDTO().from(entity);
+}
 
 	@Override
 	public QuantityMeasurementDTO add(QuantityDTO thisQuantityDTO, QuantityDTO thatQuantityDTO) {

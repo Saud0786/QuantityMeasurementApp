@@ -35,7 +35,7 @@ public class QuantityMeasurementController {
 		this.quantityMeasurementService = quantityMeasurementService;
 	}
 	
-	// - Reusable json example snippets
+	// Reusable json example snippets
 	private static final String EX_FEET_INCH ="""
 		{ 
 			"thisQuantityDTO": {"value":1.0,"unit":"FEET", "measurementType":"LengthUnit"},
