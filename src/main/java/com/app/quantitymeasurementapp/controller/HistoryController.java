@@ -53,4 +53,12 @@ public class HistoryController {
         response.put("count", historyService.getOperationCount(getCurrentUser(), operationType));
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping
+    public ResponseEntity<Map<String, String>> clearHistory() {
+        historyService.clearUserHistory(getCurrentUser());
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "History cleared successfully");
+        return ResponseEntity.ok(response);
+    }
 }
