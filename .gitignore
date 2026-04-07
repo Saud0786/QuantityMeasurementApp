@@ -19,7 +19,7 @@ target/
 *.iml
 *.ipr
 *.properties
-
+.metadata/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -32,4 +32,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### ENV ###
 .env
+
+### 🔐 SENSITIVE FILES (IMPORTANT) ###
+**/application.yml
+**/application.properties

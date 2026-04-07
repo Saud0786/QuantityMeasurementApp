@@ -73,6 +73,11 @@ public class HistoryService {
         return historyRepository.countSuccessfulOperations(user.getId(), operationType);
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public void clearUserHistory(UserEntity user) {
+        historyRepository.deleteAllByUserId(user.getId());
+    }
+
     private HistoryResponseDTO convertToDTO(OperationHistoryEntity entity) {
         String input;
         if (entity.getValue2() != null) {
