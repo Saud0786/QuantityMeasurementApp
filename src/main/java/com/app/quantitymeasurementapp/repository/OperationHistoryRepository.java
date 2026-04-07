@@ -35,4 +35,7 @@ public interface OperationHistoryRepository extends JpaRepository<OperationHisto
     // Delete old history (older than days)
     @Query("DELETE FROM OperationHistoryEntity h WHERE h.userId = :userId AND h.createdAt < :date")
     void deleteOldHistory(@Param("userId") Long userId, @Param("date") LocalDateTime date);
+    
+    // Delete all user history
+    void deleteAllByUserId(Long userId);
 }

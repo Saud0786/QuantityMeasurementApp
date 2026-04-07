@@ -12,6 +12,7 @@ import com.app.quantitymeasurementapp.exception.UserNotFoundException;
 import com.app.quantitymeasurementapp.exception.WrongPasswordException;
 import com.app.quantitymeasurementapp.model.UserEntity;
 import com.app.quantitymeasurementapp.repository.UserRepository;
+import com.app.quantitymeasurementapp.repository.OperationHistoryRepository;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final OperationHistoryRepository historyRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
@@ -61,5 +63,21 @@ public class AuthService {
         response.addCookie(cookie);
 
         return token;
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteAccount(UserEntity user, HttpServletResponse response) {
+        // Clear history first because of database constraint
+        historyRepository.deleteAllByUserId(user.getId());
+        
+        // Delete user
+        userRepository.deleteById(user.getId());
+
+        // Clear the token cookie
+        Cookie cookie = new Cookie("token", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 }
