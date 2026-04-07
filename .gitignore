@@ -64,11 +64,11 @@ Thumbs.db
 # ===============================
 .env
 .env.*
-application-local.properties
-application-prod.properties
-application-prod.yml
-application-secrets.properties
-application-secrets.yml
+application*.properties
+application*.yml
+*secret*
+*credentials*
+**/application.yml
 
 # ===============================
 # Database / Dump (OPTIONAL)
