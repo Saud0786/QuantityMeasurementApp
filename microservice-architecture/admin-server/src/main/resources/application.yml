@@ -1,0 +1,32 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: admin-server
+  
+  security:
+    user:
+      name: admin
+      password: admin123
+
+  boot:
+    admin:
+      ui:
+        title: "Quantity Measurement Microservices - Admin Dashboard"
+        poll-timer:
+          interval: 5000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    de.codecentric.boot.admin: DEBUG

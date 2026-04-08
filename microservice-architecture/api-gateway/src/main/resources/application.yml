@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      httpclient:
+        connect-timeout: 10000
+        response-timeout: 10s
+      routes:
+        - id: auth-service
+          uri: lb://AUTH-SERVICE
+          predicates:
+            - Path=/auth/**, /oauth2/**, /login/oauth2/**, /api/auth/**
+          filters:
+            - StripPrefix=0
+            
+        - id: quantity-service
+          uri: lb://QUANTITY-SERVICE
+          predicates:
+            - Path=/api/quantities/**
+          filters:
+            - StripPrefix=0
+            
+        - id: history-service
+          uri: lb://HISTORY-SERVICE
+          predicates:
+            - Path=/api/history/**, /internal/**
+          filters:
+            - StripPrefix=0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: false
+    hostname: localhost
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.netflix.discovery: DEBUG
