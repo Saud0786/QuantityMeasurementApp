@@ -1,0 +1,79 @@
+# ===============================
+# SPRING MAIN CONFIG (ALL IN ONE)
+# ===============================
+spring:
+  application:
+    name: quantity-measurement-app
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/quantitymeasurementdb
+    username: root
+    password: saud@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - profile
+              - email
+
+# ===============================
+# SERVER CONFIG
+# ===============================
+server:
+  port: 8080
+
+# ===============================
+# LOGGING
+# ===============================
+logging:
+  level:
+    root: INFO
+    com.app.quantitymeasurement: DEBUG
+
+# ===============================
+# JWT CONFIG
+# ===============================
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  expiration: 2592000000
+
+# ===============================
+# SWAGGER
+# ===============================
+springdoc:
+  swagger-ui:
+    enabled: true
+
+# ===============================
+# ACTUATOR
+# ===============================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+
+# ===============================
+# FRONTEND URL
+# ===============================
+app:
+  frontend:
+    url: http://localhost:5173
