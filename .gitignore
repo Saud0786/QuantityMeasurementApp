@@ -36,6 +36,3 @@ build/
 ### ENV ###
 .env
 
-### 🔐 SENSITIVE FILES (IMPORTANT) ###
-**/application.yml
-**/application.properties
