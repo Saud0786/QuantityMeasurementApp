@@ -1,17 +1,20 @@
-# ===============================
-# SPRING MAIN CONFIG (ALL IN ONE)
-# ===============================
 spring:
   application:
     name: quantity-measurement-app
 
   datasource:
-    url: jdbc:mysql://localhost:3306/quantitymeasurementdb
-    username: root
-    password: saud@123
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -34,46 +37,28 @@ spring:
               - profile
               - email
 
-# ===============================
-# SERVER CONFIG
-# ===============================
 server:
   port: 8080
 
-# ===============================
-# LOGGING
-# ===============================
 logging:
   level:
     root: INFO
     com.app.quantitymeasurement: DEBUG
 
-# ===============================
-# JWT CONFIG
-# ===============================
 jwt:
   secret: ${JWT_SECRET_KEY}
   expiration: 2592000000
 
-# ===============================
-# SWAGGER
-# ===============================
 springdoc:
   swagger-ui:
     enabled: true
 
-# ===============================
-# ACTUATOR
-# ===============================
 management:
   endpoints:
     web:
       exposure:
         include: health,metrics
 
-# ===============================
-# FRONTEND URL
-# ===============================
 app:
   frontend:
     url: http://localhost:5173
