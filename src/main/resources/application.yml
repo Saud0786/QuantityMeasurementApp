@@ -3,18 +3,12 @@ spring:
     name: quantity-measurement-app
 
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:mysql://database-1.czkykcsuyr06.ap-south-1.rds.amazonaws.com:3306/quantitymeasurementdb
+    username: admin
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
@@ -32,7 +26,7 @@ spring:
         registration:
           google:
             client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
+            client-secret: ${GOOGLE_SECRET}
             scope:
               - profile
               - email
@@ -46,7 +40,7 @@ logging:
     com.app.quantitymeasurement: DEBUG
 
 jwt:
-  secret: ${JWT_SECRET_KEY}
+  secret: ${JWT_SECRET}
   expiration: 2592000000
 
 springdoc:
@@ -61,4 +55,4 @@ management:
 
 app:
   frontend:
-    url: http://localhost:5173
+    url: http://13.235.224.122
